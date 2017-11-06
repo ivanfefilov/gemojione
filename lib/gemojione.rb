@@ -79,6 +79,26 @@ module Gemojione
       %Q{<img alt="#{moji}" class="emoji" src="#{ image_url_for_unicode_moji(moji) }"#{ default_size ? ' style="width: '+default_size+';"' : '' }>}
     end
   end
+  
+  def self.shortname_for_moji(moji)
+    emoji = index.find_by_moji(moji)
+    %Q{#{emoji['shortname']}}
+  end  
+  
+  def self.replace_unicode_moji_with_shortnames(string)
+    return string unless string
+    unless string.match(index.unicode_moji_regex)
+      return safe_string(string)
+    end
+
+    safe_string = safe_string(string.dup)
+    safe_string.gsub!(index.unicode_moji_regex) do |moji|
+      Gemojione.shortname_for_moji(moji)
+    end
+    safe_string = safe_string.html_safe if safe_string.respond_to?(:html_safe)
+
+    safe_string
+  end  
 
   def self.replace_unicode_moji_with_images(string)
     return string unless string
